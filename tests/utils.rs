@@ -153,6 +153,42 @@ pub fn key_fn(id: i32) -> String {
     format!("Key {}", id)
 }
 
+// ----------------------------------------------------------------------------
+
+pub trait IteratorExt: Iterator + Sized {
+    /// Take exactly this many elements.
+    /// Panics if the underlying iterator yields less.
+    fn take_exactly(self, count: usize) -> TakeExactly<Self>;
+}
+
+pub struct TakeExactly<I: Iterator> {
+    iter: I,
+    n: usize,
+}
+
+impl<I: Iterator> IteratorExt for I {
+    fn take_exactly(self, count: usize) -> TakeExactly<I> {
+        TakeExactly {
+            iter: self,
+            n: count,
+        }
+    }
+}
+
+impl<I: Iterator> Iterator for TakeExactly<I> {
+    type Item = I::Item;
+    fn next(&mut self) -> Option<I::Item> {
+        if self.n == 0 {
+            None
+        } else if let Some(element) = self.iter.next() {
+            self.n -= 1;
+            Some(element)
+        } else {
+            panic!("TakeExactly: expected {} more elements", self.n);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

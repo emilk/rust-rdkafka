@@ -16,6 +16,8 @@ use rdkafka::{ClientConfig, ClientContext, Message, Statistics, Timestamp};
 mod utils;
 use crate::utils::*;
 
+use crate::utils::IteratorExt;
+
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -103,7 +105,7 @@ fn test_produce_consume_iter() {
     let consumer = create_base_consumer(&rand_test_group(), None);
     consumer.subscribe(&[topic_name.as_str()]).unwrap();
 
-    for message in consumer.iter().take(100) {
+    for message in consumer.iter().take_exactly(100) {
         match message {
             Ok(m) => {
                 let id = message_map[&(m.partition(), m.offset())];
